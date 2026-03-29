@@ -40,10 +40,10 @@ class SMSReceiverModule : Module() {
     Events("onSMSReceived")
 
     Function("startListening") {
-      if (registered) return@Function
+      if (registered) return@Function null
 
       val appCtx = appContext.reactContext?.applicationContext
-        ?: return@Function
+        ?: return@Function null
 
       val handler: (String, String) -> Unit = { body, sender ->
         emitSmsToJs(body, sender)
@@ -61,12 +61,13 @@ class SMSReceiverModule : Module() {
         appCtx.registerReceiver(r, filter)
       }
       registered = true
+      null
     }
 
     Function("stopListening") {
       SMSBroadcastReceiver.sharedHandler = null
 
-      if (!registered) return@Function
+      if (!registered) return@Function null
 
       val appCtx = appContext.reactContext?.applicationContext
       val r = receiver
@@ -80,6 +81,7 @@ class SMSReceiverModule : Module() {
           // Not registered
         }
       }
+      null
     }
   }
 }
