@@ -15,6 +15,16 @@ import {
 } from 'react-native';
 
 import { useSMSReceiver } from './src/hooks/useSMSReceiver';
+import { categorize } from './src/services/Categorizer';
+import { parse } from './src/services/SMSParser';
+import {
+  ensureAutoLogNotificationHandler,
+  ensureNotificationPermission,
+  ensureSilentAutoLogChannel,
+  notifyAutoLoggedTransaction,
+} from './src/services/transactionNotifications';
+
+ensureAutoLogNotificationHandler();
 
 type PermissionState = 'unknown' | 'granted' | 'denied';
 
@@ -34,6 +44,7 @@ export default function App() {
   const [lastBody, setLastBody] = useState<string | null>(null);
   const [lastSender, setLastSender] = useState<string | null>(null);
   const [receivedCount, setReceivedCount] = useState(0);
+  const [lastCategory, setLastCategory] = useState<string | null>(null);
 
   const syncPermissionFromSystem = useCallback(async () => {
     if (Platform.OS !== 'android') {
@@ -105,6 +116,14 @@ export default function App() {
   }, [syncPermissionFromSystem]);
 
   useEffect(() => {
+    if (Platform.OS !== 'android' || permission !== 'granted') return;
+    void (async () => {
+      await ensureSilentAutoLogChannel();
+      await ensureNotificationPermission();
+    })();
+  }, [permission]);
+
+  useEffect(() => {
     if (Platform.OS !== 'android') return;
 
     const sub = AppState.addEventListener('change', (next: AppStateStatus) => {
@@ -121,6 +140,21 @@ export default function App() {
       setLastBody(body);
       setLastSender(sender);
       setReceivedCount((c) => c + 1);
+
+      void (async () => {
+        const parsed = parse(body);
+        if (!parsed) {
+          setLastCategory(null);
+          return;
+        }
+        const category = await categorize(parsed.merchant);
+        setLastCategory(category);
+        try {
+          await notifyAutoLoggedTransaction(parsed, category);
+        } catch {
+          /* non-fatal: notification plumbing may be denied or unavailable */
+        }
+      })();
     },
   });
 
@@ -152,6 +186,7 @@ export default function App() {
             <Text style={[styles.label, styles.gap]}>Last SMS (via native module)</Text>
             <Text style={styles.value}>Count: {receivedCount}</Text>
             <Text style={styles.value}>From: {lastSender ?? '—'}</Text>
+            <Text style={styles.value}>Category (if parsed): {lastCategory ?? '—'}</Text>
             <Text style={styles.bodyPreview}>{lastBody ?? 'No SMS received yet — send one to this phone.'}</Text>
 
             {permission !== 'granted' ? (

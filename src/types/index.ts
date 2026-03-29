@@ -20,3 +20,12 @@ export interface MerchantMap {
   merchant: string;
   category: string;
 }
+
+/** Structured bank SMS (US-1.2). */
+export interface ParsedSMS {
+  amount: number;
+  merchant: string;
+  date: Date;
+  type: 'debit' | 'credit';
+  bank: string;
+}

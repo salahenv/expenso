@@ -17,7 +17,8 @@
     "android": {
       "permissions": [
         "android.permission.RECEIVE_SMS",
-        "android.permission.READ_SMS"
+        "android.permission.READ_SMS",
+        "android.permission.POST_NOTIFICATIONS"
       ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -33,7 +34,8 @@
     },
     "plugins": [
       "expo-dev-client",
-      "expo-build-properties"
+      "expo-build-properties",
+      "expo-notifications"
     ],
     "extra": {
       "eas": {
