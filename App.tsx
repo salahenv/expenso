@@ -1,3 +1,4 @@
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -162,6 +163,13 @@ export default function App() {
     <View style={styles.root}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.title}>Expenso — SMS debug</Text>
+        <Text style={styles.buildStamp} testID="bundle-stamp">
+          Bundle US-1.4 · app v{Constants.expoConfig?.version ?? '—'} ·{' '}
+          {Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+            ? 'dev client'
+            : Constants.executionEnvironment}
+          {Constants.debugMode ? ' · debug' : ''}
+        </Text>
 
         {Platform.OS !== 'android' ? (
           <Text style={styles.muted}>SMS listening runs on Android only.</Text>
@@ -220,7 +228,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '600',
+    marginBottom: 8,
+  },
+  buildStamp: {
+    fontSize: 13,
+    lineHeight: 18,
     marginBottom: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: '#e0f2fe',
+    color: '#0c4a6e',
+    overflow: 'hidden',
   },
   muted: {
     color: '#64748b',
