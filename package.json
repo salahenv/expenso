@@ -4,12 +4,16 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
     "expo": "55.0.10-canary-20260328-bdc6273",
+    "expo-build-properties": "^55.0.11-canary-20260328-bdc6273",
+    "expo-dev-client": "55.0.20-canary-20260328-bdc6273",
+    "expo-modules-core": "^55.0.19-canary-20260328-bdc6273",
+    "expo-sqlite": "^55.0.12-canary-20260328-bdc6273",
     "expo-status-bar": "55.0.5-canary-20260328-bdc6273",
     "react": "19.2.0",
     "react-native": "0.83.4"

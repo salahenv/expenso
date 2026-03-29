@@ -36,6 +36,7 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# generated native folders
+# generated native folders (commit android/ — custom Kotlin SMS module must ship to EAS)
 /ios
-/android
+
+.early.coverage

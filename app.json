@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "expenso",
+    "name": "Expenso",
     "slug": "expenso",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,16 +15,30 @@
       "supportsTablet": true
     },
     "android": {
+      "permissions": [
+        "android.permission.RECEIVE_SMS",
+        "android.permission.READ_SMS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.expenso"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-dev-client",
+      "expo-build-properties"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "75338827-12c8-4d18-9c7e-990050e082b7"
+      }
     }
   }
 }
