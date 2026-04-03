@@ -98,4 +98,48 @@ describe('SMSParser.parse', () => {
   it('returns null for unrelated text', () => {
     expect(parse('Meeting at 5pm tomorrow — bring the report.', REF)).toBeNull();
   });
+
+  it('parses ICICI debit with payee after "to" and comma amount', () => {
+    const body =
+      'ICICI Bank: INR 1,200.50 debited from A/c XX088 on 03-Apr-26 to ZOMATO. UPI Ref 999';
+    const r = parse(body, REF);
+    expect(r).not.toBeNull();
+    expect(r!.bank).toBe('ICICI');
+    expect(r!.amount).toBe(1200.5);
+    expect(r!.merchant).toBe('ZOMATO');
+    expect(r!.type).toBe('debit');
+  });
+
+  it('parses generic debit when templates miss', () => {
+    const body =
+      'Alert: Rs. 99.00 debited from A/c XX999 on 02-Apr-26 for NETFLIX SUBSCRIPTION. UPI Ref 1';
+    const r = parse(body, REF);
+    expect(r).not.toBeNull();
+    expect(r!.bank).toBe('Generic');
+    expect(r!.amount).toBe(99);
+    expect(r!.merchant).toContain('NETFLIX');
+    expect(r!.type).toBe('debit');
+  });
+
+  it('parses SBI UPI debit without Rs prefix and on date 03Apr26', () => {
+    const body =
+      'Dear UPI user A/C X4576 debited by 1000.00 on date 03Apr26 trf to Rajaram Hariram Refno 609318151356 If not u? call-1800111109 for other services-18001234-SBI';
+    const r = parse(body, new Date('2026-04-03T12:00:00.000Z'));
+    expect(r).not.toBeNull();
+    expect(r!.bank).toBe('SBI');
+    expect(r!.amount).toBe(1000);
+    expect(r!.merchant).toBe('RAJARAM HARIRAM');
+    expect(r!.date.getFullYear()).toBe(2026);
+    expect(r!.date.getMonth()).toBe(3);
+    expect(r!.date.getDate()).toBe(3);
+  });
+
+  it('does not use first Rs amount when it is balance before debited line', () => {
+    const body =
+      'Avl Bal Rs 107.50. ICICI Bank: INR 1,000.00 debited from A/c XX1 on 03-Apr-26 to SWIGGY. UPI';
+    const r = parse(body, REF);
+    expect(r).not.toBeNull();
+    expect(r!.amount).toBe(1000);
+    expect(r!.merchant).toBe('SWIGGY');
+  });
 });

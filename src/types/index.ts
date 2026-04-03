@@ -5,6 +5,7 @@ export interface Transaction {
   category: string;
   date: string;
   source: 'sms' | 'manual';
+  createdAt: string;
   rawSMS?: string;
   note?: string;
 }

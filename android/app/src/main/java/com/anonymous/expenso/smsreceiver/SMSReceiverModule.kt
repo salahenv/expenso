@@ -2,6 +2,7 @@ package com.anonymous.expenso.smsreceiver
 
 import android.content.Context
 import android.content.IntentFilter
+import android.database.Cursor
 import android.os.Build
 import android.os.SystemClock
 import android.provider.Telephony
@@ -82,6 +83,60 @@ class SMSReceiverModule : Module() {
         }
       }
       null
+    }
+
+    Function("getRecentInboxSMS") { limit: Int? ->
+      val appCtx = appContext.reactContext?.applicationContext
+        ?: return@Function emptyList<Map<String, Any?>>()
+
+      val safeLimit = (limit ?: 200).coerceIn(1, 1000)
+      val resolver = appCtx.contentResolver
+      val uri = Telephony.Sms.Inbox.CONTENT_URI
+      val projection = arrayOf(
+        Telephony.Sms.BODY,
+        Telephony.Sms.ADDRESS,
+        Telephony.Sms.DATE
+      )
+
+      val rows = mutableListOf<Map<String, Any?>>()
+      var cursor: Cursor? = null
+      try {
+        // NOTE: Many Android builds reject "LIMIT" in sortOrder; cap rows in code instead.
+        cursor = resolver.query(
+          uri,
+          projection,
+          null,
+          null,
+          "${Telephony.Sms.DATE} DESC"
+        )
+        if (cursor != null) {
+          val bodyCol = cursor.getColumnIndex(Telephony.Sms.BODY)
+          val addressCol = cursor.getColumnIndex(Telephony.Sms.ADDRESS)
+          val dateCol = cursor.getColumnIndex(Telephony.Sms.DATE)
+
+          while (cursor.moveToNext() && rows.size < safeLimit) {
+            val body = if (bodyCol >= 0) cursor.getString(bodyCol) else null
+            val sender = if (addressCol >= 0) cursor.getString(addressCol) else null
+            val dateMillis = if (dateCol >= 0) cursor.getLong(dateCol) else 0L
+            if (!body.isNullOrBlank()) {
+              rows.add(
+                mapOf(
+                  "body" to body,
+                  "sender" to (sender ?: ""),
+                  "dateMillis" to dateMillis
+                )
+              )
+            }
+          }
+        }
+      } catch (_: SecurityException) {
+        // READ_SMS missing
+      } catch (_: IllegalArgumentException) {
+        // Invalid projection/sort on some OEMs
+      } finally {
+        cursor?.close()
+      }
+      rows
     }
   }
 }
